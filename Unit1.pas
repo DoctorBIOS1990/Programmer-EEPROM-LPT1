@@ -1,0 +1,607 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, XPMan, ExtCtrls, Buttons, FileCtrl, ComCtrls,
+  ShellCtrls, jpeg, ShellApi, MMSystem, Shlobj, ATBinHex, Menus,
+  dxGDIPlusClasses, WinSkinData, SkinCaption, sSkinManager, acTitleBar,
+  sBitBtn;
+
+type
+  TmainForm = class(TForm)
+    Memo1: TMemo;
+    Image1: TImage;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    Image0: TImage;
+    ATBinHex1: TATBinHex;
+    OpenDialog1: TOpenDialog;
+    ListBox1: TListBox;
+    MainMenu1: TMainMenu;
+    CARGARBINARIO1: TMenuItem;
+    GUARDARBINARIO1: TMenuItem;
+    SaveDialog1: TSaveDialog;
+    Image2: TImage;
+    CargarBinario2: TMenuItem;
+    GuardarBinario2: TMenuItem;
+    PopupMenu1: TPopupMenu;
+    LimpiarHistorial1: TMenuItem;
+    LeerBinario1: TMenuItem;
+    sSkinManager1: TsSkinManager;
+    E1: TMenuItem;
+    sBitBtn1: TsBitBtn;
+    sBitBtn2: TsBitBtn;
+    sBitBtn3: TsBitBtn;
+    sBitBtn4: TsBitBtn;
+    sBitBtn5: TsBitBtn;
+    sBitBtn6: TsBitBtn;
+    PopupMenu2: TPopupMenu;
+    a1: TMenuItem;
+    C1: TMenuItem;
+    procedure Image2Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure ListBox1Click(Sender: TObject);
+    procedure CargarBinario2Click(Sender: TObject);
+    procedure GuardarBinario2Click(Sender: TObject);
+    procedure LimpiarHistorial1Click(Sender: TObject);
+    procedure LeerBinario1Click(Sender: TObject);
+    procedure E1Click(Sender: TObject);
+    procedure sBitBtn1Click(Sender: TObject);
+    procedure sBitBtn2Click(Sender: TObject);
+    procedure sBitBtn3Click(Sender: TObject);
+    procedure sBitBtn4Click(Sender: TObject);
+    procedure sBitBtn5Click(Sender: TObject);
+    procedure sBitBtn6Click(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure a1Click(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure C1Click(Sender: TObject);
+
+    Function tamanio(nom:String): integer;
+    procedure RunDosInMemo(Que:String; EnMemo:TMemo);
+
+  private
+        IconData : TNotifyIconData;
+        procedure WMSysCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
+        procedure Icon(var Msg : TMessage); message WM_USER+1;
+
+  public
+    { Public declarations }
+  end;
+
+var
+  mainForm: TmainForm;
+  SELECCIONADO: Integer;
+  
+implementation
+
+uses Unit2;
+
+{$R *.dfm}
+{$R sonidos.res}
+
+Function TmainForm.tamanio(nom:String): integer;
+Var
+  FHandle: Integer;
+Begin
+  FHandle := FileOpen(nom, 0);
+
+ Try
+  Result := (GetFileSize(FHandle, nil));
+  Finally
+    FileClose(FHandle);
+ end;
+end;
+
+
+procedure TmainForm.Icon(var Msg : TMessage);
+var 
+  p : TPoint;
+begin 
+  if Msg.lParam = WM_RBUTTONDOWN then begin 
+    SetForegroundWindow(Handle);
+    GetCursorPos(p);
+    PopupMenu2.Popup(p.x, p.y);
+    PostMessage(Handle, WM_NULL, 0, 0);
+  end;
+end; 
+
+procedure TmainForm.WMSysCommand(var Msg: TWMSysCommand);
+begin 
+  if (Msg.CmdType = SC_MINIMIZE) then begin 
+    with IconData do 
+    begin 
+      cbSize := sizeof(IconData);
+      Wnd := Handle;
+      uID := 100;
+      uFlags := NIF_MESSAGE + NIF_ICON + NIF_TIP;
+      uCallbackMessage := WM_USER + 1;
+      {Usamos de icono el mismo de la aplicacion}
+      {We use the same icon as the application}
+      hIcon := Application.Icon.Handle;
+      {Como Hint del icono, el nombre de la aplicacion}
+      {The name of te app for the hint of the icon}
+      StrPCopy(szTip, Application.Title);
+    end; 
+    {Ponemos el icono al lado del reloj}
+    {Place the icon next to the clock}
+    Shell_NotifyIcon(NIM_ADD, @IconData);
+    {Ocultamos la Form...}
+    {Hide the form...}
+    Hide;
+  end else DefaultHandler(Msg);
+end; 
+
+procedure TmainForm.Image2Click(Sender: TObject);
+begin
+ ShellExecute(mainForm.Handle,nil,PChar('https://doctorbios.cubava.cu'),'','',SW_SHOWNORMAL);
+end;
+
+procedure TmainForm.FormCreate(Sender: TObject);
+Var
+  Pos :Integer;
+begin
+try
+   PlaySound(Pchar('SONIDO1'),hinstance,SND_RESOURCE or SND_ASYNC);
+   Listbox1.Items.LoadFromFile(ExtractFilePath(Application.Exename)+'HISTORIAL.TXT');
+  except
+end;
+end;
+
+procedure TmainForm.ListBox1Click(Sender: TObject);
+ Var
+  Tam : Integer;
+  Archivo :String;
+
+begin
+  PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+Try
+  SELECCIONADO := ListBox1.ItemIndex;
+  if (SELECCIONADO > -1) then ATBinHex1.Open(ListBox1.Items[SELECCIONADO]);
+
+  //COPIANDO AL DIRECTORIO DE TRABAJO
+  if not CopyFile(PChar(ListBox1.Items[SELECCIONADO]),
+  PChar(ExtractFilePath(Application.Exename) + 'PROG_TEMP.BIN'),FALSE) then
+  Application.MessageBox('NO SE HA CARGADO EL BINARIO CORRECTAMENTE.',
+  'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+
+  Archivo := ExtractFilePath(Application.ExeName) + 'PROG_TEMP.BIN';
+  Tam :=((Tamanio(Archivo)div 1024));
+  ListBox1.Hint := 'Tamaño: ' + IntToStr(Tam) + ' KB.';
+  Label5.Caption := '[ ' + ExtractFileName(ListBox1.Items[SELECCIONADO]) + ' ]';
+  ATBinHex1.Hint := ExtractFileName(ListBox1.Items[SELECCIONADO] +' , Tamaño: '
+  + IntToStr(Tam) + ' KB.');
+
+  Except
+  end;
+   ATBinHex1.Visible := True;
+end;
+
+procedure TmainForm.CargarBinario2Click(Sender: TObject);
+Var
+  I, Pos, REPETIDO: Integer;
+begin
+  PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+if OpenDialog1.Execute then
+  Begin
+  Listbox1.Items.Add(OpenDialog1.FileName);
+
+  Listbox1.Items.SaveToFile(ExtractFilePath(Application.Exename)+'HISTORIAL.TXT');
+  Pos := Listbox1.Items.Count;
+  ListBox1.Selected[Pos-1] := True;
+  ATBinHex1.Open(ListBox1.Items[SELECCIONADO]);
+  ATBinHex1.Visible := True;
+end;
+end;
+
+procedure TmainForm.GuardarBinario2Click(Sender: TObject);
+Var
+  Pos   :Integer;
+begin
+PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+if SaveDialog1.Execute then
+  Begin
+
+  if not CopyFile(PChar(ExtractFilePath(Application.Exename)+'DUMP_TEMP.BIN'),PChar(SaveDialog1.FileName + '.bin'),FALSE) then
+
+   Application.MessageBox('NO SE HA LEIDO NINGUNA EEPROM.',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+end;
+
+Pos := Listbox1.Items.Count;
+ListBox1.Selected[Pos-1] := True;
+
+end;
+
+procedure TmainForm.LimpiarHistorial1Click(Sender: TObject);
+begin
+  Listbox1.Clear;
+  Listbox1.Items.SaveToFile(ExtractFilePath(Application.Exename)+'HISTORIAL.TXT');
+  Label5.Caption := '--- ARCHIVO DE BINARIO ---';
+end;
+
+procedure TmainForm.LeerBinario1Click(Sender: TObject);
+begin
+  Try
+   ATBinHex1.Open(ExtractFilePath(Application.Exename)+'\DUMP_TEMP.BIN');
+  Except
+   Application.MessageBox('NO SE PUEDE LEER LA SALVA.',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+ end;
+    ATBinHex1.Visible := True;
+end;
+
+procedure TmainForm.E1Click(Sender: TObject);
+begin
+  diagramForm.ShowModal;
+end;
+
+procedure TmainForm.sBitBtn1Click(Sender: TObject);
+Var
+  Traduccion   :String;
+  Servicio     :String;
+  Linea        :String;
+
+begin
+  Memo1.Lines.Clear;
+  Memo1.Font.Color := cllime;
+  RunDosInMemo('SPIPGMW.exe -I',Memo1);
+Try
+    PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+  except
+end;
+
+  Traduccion := Memo1.Lines[9];
+  Linea := Memo1.Lines[10];
+  Servicio := Memo1.Lines[6];
+
+  Memo1.Alignment := TaCenter;
+  Memo1.Lines.Clear;
+
+  Memo1.Lines.Insert(0, '');
+  Memo1.Lines.Insert(1, 'SPI Flash 2023 - Doctor BIOS');
+  Memo1.Lines.Insert(2, 'https:\\doctorbios.cubava.cu');
+  Memo1.Lines.Insert(3, '');
+  Memo1.Lines.Insert(4, 'Aporte a la comunidad Electrónica Cubana');
+  Memo1.Lines.Insert(5, 'Gracias por usar mi programa.');
+
+  Label6.Caption := Traduccion;
+  Label6.Font.Color := clLIME;
+  Label4.Font.Color := clLIME;
+  Image1.Picture.Bitmap.LoadFromResourceName(hInstance, 'DETECTADO');
+
+  if (Traduccion = 'unknown manufacturer, unknown chip') then
+  Begin
+     Label6.Caption := '[ CHIP Y FABRICANTE DESCONOCIDOS ]';
+     Label6.Font.Color := clred;
+     Label4.Caption := '[ ? ]';
+     Label4.Font.Color := clred;
+     Image1.Picture.Bitmap.LoadFromResourceName(hInstance, 'NORMAL');
+  end;
+
+  if (Servicio = 'ERROR: cannot open ServiceManager database.') then
+  Begin
+     Label6.Caption := '[ EJECUTAR COMO ADMINISTRADOR ]';
+     Label6.Font.Color := clred;
+     Label4.Caption := '[ ? ]';
+     Label4.Font.Color := clred;
+     Image1.Picture.Bitmap.LoadFromResourceName(hInstance, 'NORMAL');
+  end;
+
+  if (Servicio = 'ERROR: IOPERM device driver is not digitally signed, turn off the ') then
+  Begin
+     Label6.Caption := '[ ERROR DE DRIVERS ]';
+     Label6.Font.Color := clred;
+     Label4.Caption := '[ ? ]';
+     Label4.Font.Color := clred;
+     Application.MessageBox('DESABILITE LA FIRMA DE CONTROLADORES PARA EJECUTAR EN 64BITS.',
+     'Doctor BIOS', MB_OK + MB_ICONERROR);
+     Image1.Picture.Bitmap.LoadFromResourceName(hInstance, 'NORMAL');
+  end;
+
+if AnsiPos(Trim('32kB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 32KB ]';
+if AnsiPos(Trim('64kB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 64KB ]';
+if AnsiPos(Trim('128kB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 128KB ]';
+if AnsiPos(Trim('256kB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 256KB ]';
+if AnsiPos(Trim('512kB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 512KB ]';
+if AnsiPos(Trim('1MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 1MB ]';
+if AnsiPos(Trim('2MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 2MB ]';
+if AnsiPos(Trim('4MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 4MB ]';
+if AnsiPos(Trim('8MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 8MB ]';
+if AnsiPos(Trim('16MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 16MB ]';
+if AnsiPos(Trim('32MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 32MB ]';
+if AnsiPos(Trim('64MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 64MB ]';
+if AnsiPos(Trim('128MB') , Trim(Label6.Caption))<>0 then Label4.Caption := '[ 128MB ]';
+
+//Revisando fuera de Linea
+
+if AnsiPos(Trim('32kB') , Trim(Linea))<>0 then Label4.Caption := '[ 32KB ]';
+if AnsiPos(Trim('64kB') , Trim(Linea))<>0 then Label4.Caption := '[ 64KB ]';
+if AnsiPos(Trim('128kB') , Trim(Linea))<>0 then Label4.Caption := '[ 128KB ]';
+if AnsiPos(Trim('256kB') , Trim(Linea))<>0 then Label4.Caption := '[ 256KB ]';
+if AnsiPos(Trim('512kB') , Trim(Linea))<>0 then Label4.Caption := '[ 512KB ]';
+if AnsiPos(Trim('1MB') , Trim(Linea))<>0 then Label4.Caption := '[ 1MB ]';
+if AnsiPos(Trim('2MB') , Trim(Linea))<>0 then Label4.Caption := '[ 2MB ]';
+if AnsiPos(Trim('4MB') , Trim(Linea))<>0 then Label4.Caption := '[ 4MB ]';
+if AnsiPos(Trim('8MB') , Trim(Linea))<>0 then Label4.Caption := '[ 8MB ]';
+if AnsiPos(Trim('16MB') , Trim(Linea))<>0 then Label4.Caption := '[ 16MB ]';
+if AnsiPos(Trim('32MB') , Trim(Linea))<>0 then Label4.Caption := '[ 32MB ]';
+if AnsiPos(Trim('64MB') , Trim(Linea))<>0 then Label4.Caption := '[ 64MB ]';
+if AnsiPos(Trim('128MB') , Trim(Linea))<>0 then Label4.Caption := '[ 128MB ]';
+
+//REVISANDO 1.8V
+if AnsiPos(Trim('1,8V') , Trim(Label6.Caption))<> 0 then
+  Begin
+    diagramForm.Image2.Show;
+    diagramForm.Showmodal;
+    Application.MessageBox('PORR FAVOR, QUITAR EL JUMPER PARA 1.8V.',
+   'Doctor BIOS', MB_OK + MB_ICONERROR);
+   Image1.Picture.Bitmap.LoadFromResourceName(hInstance, 'DETECTADO');
+  end;
+end;
+
+procedure TmainForm.sBitBtn2Click(Sender: TObject);
+begin
+PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+if (Label6.Caption = '[ CHIP Y FABRICANTE DESCONOCIDOS ]') OR
+(Label6.Caption = '-- TIPO DE IC --') OR
+(Label6.Caption = '[ ERROR DE DRIVERS ]') OR
+(Label6.Caption = '[ EJECUTAR COMO ADMINISTRADOR ]') OR
+(Label6.Caption = '') then
+  Begin
+   Application.MessageBox('SE DEBE DETECTAR EL CHIP EEPROM CORRRECTAMENTE',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+  end
+  else
+    Begin
+      Memo1.Lines.Clear;
+      Memo1.Font.Color := clyellow;
+      Memo1.Lines.Insert(0, '');
+      Memo1.Lines.Insert(1, '- DESBLOQUEANDO...');
+
+      RunDosInMemo('SPIPGMW.exe -U',Memo1);
+
+  if AnsiPos(Trim('FlashROM is unlocked now') , Trim(Memo1.Lines[14]))<>0 then
+         Begin
+          Memo1.Lines.Clear;
+          Memo1.Font.Color := cllime;
+          Memo1.Lines.Insert(0, '');
+          Memo1.Lines.Insert(1, '- SPI Flash DESBLOQUEADA!!!');
+        end;
+
+  if AnsiPos(Trim('FlashROM is unlocked now') , Trim(Memo1.Lines[15]))<>0 then
+         Begin
+          Memo1.Lines.Clear;
+          Memo1.Font.Color := cllime;
+          Memo1.Lines.Insert(0, '');
+          Memo1.Lines.Insert(1, '- SPI Flash DESBLOQUEADA!!!');
+        end;
+  end;
+end;
+
+procedure TmainForm.sBitBtn3Click(Sender: TObject);
+begin
+PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+if (Label6.Caption = '[ CHIP Y FABRICANTE DESCONOCIDOS ]') OR
+(Label6.Caption = '-- TIPO DE IC --') OR
+(Label6.Caption = '[ ERROR DE DRIVERS ]') OR
+(Label6.Caption = '[ EJECUTAR COMO ADMINISTRADOR ]') OR
+(Label6.Caption = '') then
+  Begin
+   Application.MessageBox('SE DEBE DETECTAR EL CHIP EEPROM CORRRECTAMENTE',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+  end
+  else
+    Begin
+      Memo1.Lines.Clear;
+      Memo1.Font.Color := clred;
+      Memo1.Lines.Insert(0, '');
+      Memo1.Lines.Insert(1, '- BORRANDO...');
+      RunDosInMemo('SPIPGMW.exe -E',Memo1);
+
+ if AnsiPos(Trim('done.') , Trim(Memo1.Lines[13])) <> 0 then
+        Begin
+          Memo1.Lines.Clear;
+          Memo1.Font.Color := cllime;
+          Memo1.Lines.Insert(0, '');
+          Memo1.Lines.Insert(1, '- SPI Flash Limpiada!!!');
+        end;
+
+ if AnsiPos(Trim('done.') , Trim(Memo1.Lines[14])) <> 0 then
+        Begin
+          Memo1.Lines.Clear;
+          Memo1.Font.Color := cllime;
+          Memo1.Lines.Insert(0, '');
+          Memo1.Lines.Insert(1, '- SPI Flash Limpiada!!!');
+        end;
+
+        Begin
+          Memo1.Lines.Clear;
+          Memo1.Font.Color := cllime;
+          Memo1.Lines.Insert(0, '');
+          Memo1.Lines.Insert(1, '- SPI Flash Limpiada!!!');
+        end;
+end;
+end;
+
+procedure TmainForm.sBitBtn4Click(Sender: TObject);
+Var
+  Aux   :String;
+begin
+ PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+ if (Label6.Caption = '[ CHIP Y FABRICANTE DESCONOCIDOS ]') OR
+(Label6.Caption = '-- TIPO DE IC --') OR
+(Label6.Caption = '[ ERROR DE DRIVERS ]') OR
+(Label6.Caption = '[ EJECUTAR COMO ADMINISTRADOR ]') OR
+(Label6.Caption = '') then
+  Begin
+   Application.MessageBox('SE DEBE DETECTAR EL CHIP EEPROM CORRRECTAMENTE',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+  end
+  else
+    Begin
+    Aux := '"' + ExtractFilepath(Application.ExeName)+ 'DUMP_TEMP.BIN"';
+    Try
+     DeleteFile(pChar(ExtractFilepath(Application.ExeName) + 'DUMP_TEMP.BIN'));
+    Except end;
+        WinExec(PChar('SPIPGMW.exe -D ' + Aux),SW_SHOWNORMAL);
+end;
+end;
+
+procedure TmainForm.sBitBtn5Click(Sender: TObject);
+Var
+  Aux :String;
+begin
+  PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+if (Label6.Caption = '[ CHIP Y FABRICANTE DESCONOCIDOS ]') OR
+(Label6.Caption = '-- TIPO DE IC --') OR
+(Label6.Caption = '[ ERROR DE DRIVERS ]') OR
+(Label6.Caption = '[ EJECUTAR COMO ADMINISTRADOR ]') OR
+(Label6.Caption = '') then
+  Begin
+   Application.MessageBox('SE DEBE DETECTAR EL CHIP EEPROM CORRRECTAMENTE',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+  end
+  else
+    Begin
+    Aux := '"' + ExtractFilepath(Application.ExeName)+ 'PROG_TEMP.BIN"';
+    WinExec(PChar('SPIPGMW.exe -P ' + Aux),SW_SHOWNORMAL);
+   end;
+
+end;
+
+procedure TmainForm.sBitBtn6Click(Sender: TObject);
+Var
+  Aux :String;
+begin
+ PlaySound(Pchar('SONIDO2'),hinstance,SND_RESOURCE or SND_ASYNC);
+
+if (Label6.Caption = '[ CHIP Y FABRICANTE DESCONOCIDOS ]') OR
+(Label6.Caption = '-- TIPO DE IC --') OR
+(Label6.Caption = '[ ERROR DE DRIVERS ]') OR
+(Label6.Caption = '[ EJECUTAR COMO ADMINISTRADOR ]') OR
+(Label6.Caption = '') then
+  Begin
+   Application.MessageBox('SE DEBE DETECTAR EL CHIP EEPROM CORRRECTAMENTE',
+   'Doctor BIOS', MB_OK + MB_ICONINFORMATION);
+  end
+  else
+    Begin
+     Aux := '"' + ExtractFilepath(Application.ExeName)+ 'PROG_TEMP.BIN"';
+      WinExec(PChar('SPIPGMW.exe -V ' + Aux),SW_SHOWNORMAL);
+  end;
+end;
+
+procedure TmainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  Application.Terminate;
+end;
+
+procedure TmainForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Application.Terminate;
+  DeleteFile(pChar(ExtractFilepath(Application.ExeName) + 'DUMP_TEMP.BIN'));
+end;
+
+procedure TmainForm.a1Click(Sender: TObject);
+begin
+  {Mostramos de nuevo la form}
+  {We show the form again}
+  mainForm.Show;
+  ShowWindow(Application.Handle, SW_HIDE);
+  {Y nos cargamos el icono de la system tray}
+  {Destroy the systray icon}
+  Shell_NotifyIcon(NIM_DELETE, @IconData);
+  IconData.Wnd:=0;
+end;
+
+procedure TmainForm.FormDestroy(Sender: TObject);
+begin
+ if IconData.Wnd <> 0 then Shell_NotifyIcon(NIM_DELETE, @IconData);
+end;
+
+procedure TmainForm.C1Click(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+// Print to Memo
+
+procedure TmainForm.RunDosInMemo(Que:String;EnMemo:TMemo);
+  const
+     CUANTOBUFFER = 2000;
+  var 
+    Seguridades         : TSecurityAttributes;
+    PaLeer,PaEscribir   : THandle;
+    start               : TStartUpInfo;
+    ProcessInfo         : TProcessInformation;
+    Buffer              : Pchar;
+    BytesRead           : DWord;
+    CuandoSale          : DWord;
+  begin
+    with Seguridades do 
+    begin 
+      nlength              := SizeOf(TSecurityAttributes);
+      binherithandle       := true;
+      lpsecuritydescriptor := nil;
+    end; 
+    {Creamos el pipe...}
+    if Createpipe (PaLeer, PaEscribir, @Seguridades, 0) then 
+    begin 
+      Buffer  := AllocMem(CUANTOBUFFER + 1);
+      FillChar(Start,Sizeof(Start),#0);
+      start.cb          := SizeOf(start);
+      start.hStdOutput  := PaEscribir;
+      start.hStdInput   := PaLeer;
+      start.dwFlags     := STARTF_USESTDHANDLES +
+                           STARTF_USESHOWWINDOW;
+      start.wShowWindow := SW_HIDE;
+ 
+      if CreateProcess(nil,
+         PChar(Que),
+         @Seguridades,
+         @Seguridades,
+         true,
+         NORMAL_PRIORITY_CLASS,
+         nil,
+         nil,
+         start,
+         ProcessInfo)
+      then 
+        begin
+          {Espera a que termine la ejecucion}
+          repeat 
+            CuandoSale := WaitForSingleObject( ProcessInfo.hProcess,100);
+            Application.ProcessMessages;
+          until (CuandoSale <> WAIT_TIMEOUT);
+          {Leemos la Pipe}
+          repeat 
+            BytesRead := 0;
+            {Llenamos un troncho de la pipe, igual a nuestro buffer}
+            ReadFile(PaLeer,Buffer[0],CUANTOBUFFER,BytesRead,nil);
+            {La convertimos en una string terminada en cero}
+            Buffer[BytesRead]:= #0;
+            {Convertimos caracteres DOS a ANSI}
+            OemToAnsi(Buffer,Buffer);
+            EnMemo.Text := EnMemo.text + String(Buffer);
+          until (BytesRead < CUANTOBUFFER);
+        end;
+      FreeMem(Buffer);
+      CloseHandle(ProcessInfo.hProcess);
+      CloseHandle(ProcessInfo.hThread);
+      CloseHandle(PaLeer);
+      CloseHandle(PaEscribir);
+    end; 
+  end;
+  
+end.
