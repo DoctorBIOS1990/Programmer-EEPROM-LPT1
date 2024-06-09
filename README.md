@@ -9,4 +9,4 @@
 - Alpha Skin 8.41
 - Hexeditd
 
-<img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Screen.png" width="50%">
+<img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Screen.png">
