@@ -1,5 +1,5 @@
 # :floppy_disk: Programador de EEPROM por puerto LPT1
-:handshake: Solución GUI y automatizacion de comandos de SPIPGM de <a href="https://rayer.g6.cz/">Rayer</a>.
+:handshake: Antiguo proyecto, solución GUI y automatizacion de comandos de SPIPGM de <a href="https://rayer.g6.cz/">Rayer</a>.
 
 > [!IMPORTANT]
 >:magnet: <strong>Dependencias:</strong>
