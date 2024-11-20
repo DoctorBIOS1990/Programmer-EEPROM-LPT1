@@ -3,7 +3,7 @@
 Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command automation solution.
 
 > [!IMPORTANT]
->:magnet: <strong>Dependencias:</strong>
+>:magnet: <strong>Dependencies:</strong>
 >- ATViewer 3.1.0
 >- VCLSkin
 >- DevExpress Latino
