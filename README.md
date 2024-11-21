@@ -10,16 +10,24 @@ Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command aut
 >- Alpha Skin 8.41
 >- Hexeditd
 
-
+<div align="center">
+  
 # Splash
-
-<img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Splash.jpeg">
+<div align="center">
+  <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Splash.jpeg">
+</div>
 
 # Main
-<img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Main.jpeg">
+<div align="center">
+  <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Main.jpeg">
+</div>
 
 # Viewer
-<img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Screen.png">
+<div align="center">
+  <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Screen.png">
+</div>
 
 # Interface Schematic Electric
-<img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Schematic%20Electric.jpeg">
+<div align="center">
+  <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Schematic%20Electric.jpeg">
+</div>
