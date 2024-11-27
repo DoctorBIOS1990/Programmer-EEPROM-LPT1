@@ -17,12 +17,12 @@ Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command aut
   <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Splash.jpeg">
 </div>
 
-# Main
+# Main View
 <div align="center">
   <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Main.jpeg">
 </div>
 
-# Viewer
+# Hex Viewer
 <div align="center">
   <img src="https://github.com/DoctorBIOS1990/Programmer-EEPROM-LPT1/blob/main/ScreenShot/Screen.png">
 </div>
