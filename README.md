@@ -1,7 +1,9 @@
 # :floppy_disk: EEPROM Programmer by port LPT1
 
 Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command automation solution.
+
 > Developed in Borland Delphi 7
+
 > [!IMPORTANT]
 >:magnet: <strong>Dependencies:</strong>
 >- ATViewer 3.1.0
