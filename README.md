@@ -1,6 +1,6 @@
 # :floppy_disk: EEPROM Programmer by port LPT1
 
-Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command automation solution.
+Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command automation solution. Contribution to the community of electronic technicians in my country.
 
 <strong> Developed in: </strong> Borland Delphi 7
 
