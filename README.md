@@ -2,7 +2,7 @@
 
 Old project. <a href="https://rayer.g6.cz/">Rayer</a> SPIPGM GUI and command automation solution.
 
-> Developed in Borland Delphi 7
+<strong> Developed in: </strong> Borland Delphi 7
 
 > [!IMPORTANT]
 >:magnet: <strong>Dependencies:</strong>
